@@ -12,11 +12,19 @@ export async function updateTenantSettings(formData: FormData) {
     const name = formData.get("name") as string;
     const address = formData.get("address") as string;
     const openingHours = formData.get("openingHours") as string;
+    const lat = formData.get("lat") ? parseFloat(formData.get("lat") as string) : null;
+    const lng = formData.get("lng") ? parseFloat(formData.get("lng") as string) : null;
 
     try {
         await prisma.tenant.update({
             where: { id: session.user.tenantId },
-            data: { name, address, openingHours },
+            data: {
+                name,
+                address,
+                openingHours,
+                lat,
+                lng
+            },
         });
 
         revalidatePath("/dashboard/settings");
