@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PharmaHub 💊
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5-black?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
-First, run the development server:
+PharmaHub is a comprehensive, multi-tenant SaaS application designed to empower pharmacies with efficient inventory management while providing the public with a transparent portal for medicine discovery and price comparison.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🌟 Why PharmaHub?
+
+Traditional pharmacy management often lacks transparency for patients and scalability for owners. PharmaHub bridges this gap:
+
+- **For Pharmacies**: A robust dashboard to manage stock levels atomically, track daily sales, and reach more customers through a verified public profile.
+- **For the Public**: A real-time search engine to find medicines nearby, compare prices across multiple pharmacies, and check availability without leaving home.
+- **For the Platform**: Secure multi-tenancy enforced at the database layer ensures that every pharmacy's data remains private and isolated.
+
+## 🚀 Key Features
+
+### 🏢 Pharmacy Operations
+- **Self-Service Onboarding**: easy registration workflow for new pharmacies.
+- **Admin Approval**: Manual verification of licenses by platform admins before activation.
+- **Atomic Inventory**: Prevents race conditions during high-volume sales.
+- **Sales Analytics**: Real-time sales logging with automatic stock deduction.
+- **Low Stock Alerts**: Visual indicators for items needing restock.
+
+### 🔍 Public Discovery
+- **Global Search**: Search by brand name or generic active ingredients.
+- **Price Comparison**: Highlighting "Best Price Nearby" for search results.
+- **Pharmacy Profiles**: Detailed views with location, contact info, and public inventory.
+- **Real-time Availability**: Status badges (In Stock / Limited Stock) based on live inventory.
+
+### 🛡️ Technical Excellence
+- **Database Multi-tenancy**: Shared-schema isolation using Prisma Client Extensions.
+- **Modern Tech Stack**: Next.js 15 (App Router), Shadcn UI, and PostgreSQL.
+- **Role-Based Access**: Granular control for ADMIN, OWNER, and STAFF roles.
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- [Node.js 20+](https://nodejs.org/)
+- [Docker](https://www.docker.com/) (for PostgreSQL)
+- [npm](https://www.npmjs.com/)
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/pharma-hub.git
+   cd pharma-hub
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Set up Environment Variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5436/pharmahub?schema=public"
+   NEXTAUTH_SECRET="your-secret-here"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
+
+4. **Start the Database**:
+   ```bash
+   docker-compose up -d
+   ```
+
+5. **Initialize Prisma**:
+   ```bash
+   npx prisma db push
+   node prisma/seed.js
+   ```
+
+6. **Run the Development Server**:
+   ```bash
+   npm run dev
+   ```
+
+Open [http://localhost:3000](http://localhost:3000) to see the result.
+
+## 📖 Usage Examples
+
+### Logging a Sale (Pharmacy Dashboard)
+When a sale is recorded, the system atomically deducts stock:
+```typescript
+// Example of the atomic update logic in src/lib/inventory-utils.ts
+await tx.$executeRaw`
+  UPDATE "Inventory" 
+  SET "quantity" = "quantity" - ${quantity} 
+  WHERE "id" = ${id} AND "quantity" >= ${quantity}
+`;
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Searching Medicines (Public Portal)
+Patients can find the best price for "Paracetamol":
+- Navigate to `/search`
+- Enter "Paracetamol"
+- View a ranked list of pharmacies by price and availability.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🤝 Contributing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
-## Learn More
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-To learn more about Next.js, take a look at the following resources:
+## 🆘 Support
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If you're having trouble, please check our [Documentation](docs/) or open an [Issue](https://github.com/your-username/pharma-hub/issues).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 👤 Maintainers
 
-## Deploy on Vercel
+- **Main Maintainer**: Senior Engineering Team @ PharmaHub
+- **Contributors**: See the full list in [Contributors](https://github.com/your-username/pharma-hub/contributors).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built with ❤️ for better healthcare accessibility.
