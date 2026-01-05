@@ -4,7 +4,7 @@ import { useState, useEffect as useReactEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, MapPin, Pill, ArrowRight, Info, LayoutGrid, Map as MapIcon, Navigation } from "lucide-react";
+import { Search, MapPin, Pill, ArrowRight, Info, LayoutGrid, Map as MapIcon, Navigation, ArrowUpDown } from "lucide-react";
 import { searchMedicines } from "@/app/actions/search";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -17,6 +17,7 @@ export default function PublicSearchPage() {
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState<"list" | "map">("list");
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [sortBy, setSortBy] = useState<"distance" | "price">("distance");
 
     useReactEffect(() => {
         if (navigator.geolocation) {
@@ -64,12 +65,18 @@ export default function PublicSearchPage() {
             };
         });
 
-        // Sort pharmacies within medicine by distance if available, otherwise by price
+        // Sort pharmacies within medicine based on user preference
         pharmaciesWithDistance.sort((a: any, b: any) => {
-            if (a.distance !== null && b.distance !== null) {
-                return a.distance - b.distance;
+            if (sortBy === "distance") {
+                if (a.distance !== null && b.distance !== null) {
+                    return a.distance - b.distance;
+                }
+                // Fallback to price if distance unavailable
+                return a.price - b.price;
+            } else {
+                // Strictly by price
+                return a.price - b.price;
             }
-            return a.price - b.price;
         });
 
         return { ...med, pharmacies: pharmaciesWithDistance };
@@ -118,25 +125,46 @@ export default function PublicSearchPage() {
                         </form>
 
                         {processedResults.length > 0 && (
-                            <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setView("list")}
-                                    className={`rounded-lg px-4 ${view === "list" ? "bg-teal-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
-                                >
-                                    <LayoutGrid className="h-4 w-4 mr-2" />
-                                    List
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setView("map")}
-                                    className={`rounded-lg px-4 ${view === "map" ? "bg-teal-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
-                                >
-                                    <MapIcon className="h-4 w-4 mr-2" />
-                                    Map View
-                                </Button>
+                            <div className="flex flex-wrap justify-center gap-4">
+                                <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setView("list")}
+                                        className={`rounded-lg px-4 ${view === "list" ? "bg-teal-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
+                                    >
+                                        <LayoutGrid className="h-4 w-4 mr-2" />
+                                        List
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setView("map")}
+                                        className={`rounded-lg px-4 ${view === "map" ? "bg-teal-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
+                                    >
+                                        <MapIcon className="h-4 w-4 mr-2" />
+                                        Map View
+                                    </Button>
+                                </div>
+
+                                <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setSortBy("distance")}
+                                        className={`rounded-lg px-4 ${sortBy === "distance" ? "bg-amber-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
+                                    >
+                                        Distance
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setSortBy("price")}
+                                        className={`rounded-lg px-4 ${sortBy === "price" ? "bg-amber-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
+                                    >
+                                        Price
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </div>
