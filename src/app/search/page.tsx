@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect as useReactEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,12 +9,28 @@ import { searchMedicines } from "@/app/actions/search";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { MapDisplay } from "@/components/map-loader";
+import { calculateDistance, formatDistance } from "@/lib/geo-utils";
 
 export default function PublicSearchPage() {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState<"list" | "map">("list");
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+    useReactEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    });
+                },
+                (error) => console.error("Geolocation error:", error)
+            );
+        }
+    }, []);
 
     async function handleSearch(e?: React.FormEvent) {
         if (e) e.preventDefault();
@@ -26,15 +42,48 @@ export default function PublicSearchPage() {
         setLoading(false);
     }
 
+    // Process results with distance and low price detection
+    const processedResults = results.map(med => {
+        // Find the lowest price first among ALL pharmacies for this medicine
+        const minPrice = Math.min(...med.pharmacies.map((p: any) => p.price));
+
+        const pharmaciesWithDistance = med.pharmacies.map((p: any) => {
+            let distance = null;
+            if (userLocation && p.location?.lat && p.location?.lng) {
+                distance = calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    p.location.lat,
+                    p.location.lng
+                );
+            }
+            return {
+                ...p,
+                distance,
+                isLowestPrice: p.price === minPrice
+            };
+        });
+
+        // Sort pharmacies within medicine by distance if available, otherwise by price
+        pharmaciesWithDistance.sort((a: any, b: any) => {
+            if (a.distance !== null && b.distance !== null) {
+                return a.distance - b.distance;
+            }
+            return a.price - b.price;
+        });
+
+        return { ...med, pharmacies: pharmaciesWithDistance };
+    });
+
     // Collect all pharmacy markers for the map view
-    const allMarkers = results.flatMap((med: any) =>
+    const allMarkers = processedResults.flatMap((med: any) =>
         med.pharmacies
             .filter((p: any) => p.location?.lat && p.location?.lng)
             .map((p: any) => ({
                 id: p.id,
                 lat: p.location.lat,
                 lng: p.location.lng,
-                title: `${p.name} - ${med.name}`
+                title: `${p.name} - ${med.name} (${p.distance ? formatDistance(p.distance) : '??'})`
             }))
     );
 
@@ -68,7 +117,7 @@ export default function PublicSearchPage() {
                             </Button>
                         </form>
 
-                        {results.length > 0 && (
+                        {processedResults.length > 0 && (
                             <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
                                 <Button
                                     variant="ghost"
@@ -96,36 +145,39 @@ export default function PublicSearchPage() {
 
             {/* Results Section */}
             <section className="max-w-6xl mx-auto mt-12 px-4">
-                {results.length > 0 ? (
+                {processedResults.length > 0 ? (
                     view === "list" ? (
-                        <div className="grid gap-12">
-                            {results.map((medicine: any) => (
+                        <div className="max-w-4xl mx-auto space-y-12">
+                            {processedResults.map((medicine: any) => (
                                 <div key={medicine.id} className="space-y-6">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-                                            <Pill className="h-5 w-5 text-teal-400" />
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                                            <Pill className="h-5 w-5 md:h-6 md:w-6 text-teal-500" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black tracking-tight">{medicine.name}</h2>
-                                            {medicine.genericName && (
-                                                <span className="text-xs text-slate-600 font-bold uppercase tracking-widest">
-                                                    Generic: {medicine.genericName}
-                                                </span>
-                                            )}
+                                            <h2 className="text-xl md:text-2xl font-black text-white">{medicine.name}</h2>
+                                            <p className="text-xs md:text-sm text-slate-500 font-medium uppercase tracking-[0.2em]">{medicine.genericName}</p>
                                         </div>
                                     </div>
 
-                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        {medicine.pharmacies.map((pharmacy: any, idx: number) => (
-                                            <Card key={idx} className={`bg-[#0c1120] border-slate-900 hover:border-teal-500/50 transition-all shadow-xl group ${idx === 0 ? 'ring-1 ring-teal-500/30' : ''}`}>
-                                                <CardHeader className="pb-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {medicine.pharmacies.map((pharmacy: any) => (
+                                            <Card key={`${medicine.id}-${pharmacy.id}`} className="bg-[#0c1120] border-slate-900 hover:border-teal-900/50 transition-all group hover:shadow-2xl hover:shadow-teal-900/10">
+                                                <CardHeader className="pb-3">
                                                     <div className="flex justify-between items-start">
-                                                        <CardTitle className="text-base font-bold text-slate-100 tracking-tight group-hover:text-teal-400 transition-colors uppercase">{pharmacy.name}</CardTitle>
-                                                        {idx === 0 && (
-                                                            <Badge className="bg-teal-500/10 text-teal-500 border-none text-[8px] font-black uppercase tracking-widest">
-                                                                Lowest Price
-                                                            </Badge>
-                                                        )}
+                                                        <CardTitle className="text-lg font-bold text-slate-200 group-hover:text-teal-400 transition-colors uppercase tracking-tight">{pharmacy.name}</CardTitle>
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            {pharmacy.distance && (
+                                                                <Badge variant="secondary" className="bg-teal-500/10 text-teal-400 border-none text-[10px] font-bold">
+                                                                    {formatDistance(pharmacy.distance)}
+                                                                </Badge>
+                                                            )}
+                                                            {pharmacy.isLowestPrice && (
+                                                                <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[9px] font-black uppercase tracking-widest">
+                                                                    Lowest Price
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-tighter mt-1">
                                                         <MapPin className="h-3 w-3 text-teal-600" />
@@ -158,19 +210,27 @@ export default function PublicSearchPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="h-[600px] w-full rounded-2xl border border-slate-900 overflow-hidden shadow-2xl">
+                        <div className="h-[600px] w-full rounded-2xl border border-slate-900 overflow-hidden shadow-2xl relative">
                             <MapDisplay
                                 center={allMarkers.length > 0 ? { lat: allMarkers[0].lat, lng: allMarkers[0].lng } : { lat: 30.0444, lng: 31.2357 }} // Cairo default or first result
                                 zoom={allMarkers.length > 0 ? 12 : 10}
                                 markers={allMarkers}
                                 className="h-full border-none rounded-none"
                             />
+                            {userLocation && (
+                                <div className="absolute top-4 left-4 z-[1000] p-3 bg-slate-900/80 backdrop-blur-md rounded-xl border border-slate-800 shadow-2xl">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">GPS Synchronized</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )
                 ) : query && !loading ? (
                     <div className="text-center py-20 bg-[#0c1120] rounded-3xl border border-slate-900 border-dashed">
                         <Info className="h-10 w-10 text-slate-800 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Nomenclature Not Found</h3>
+                        <h3 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Medicine Not Found</h3>
                         <p className="text-slate-600 max-w-sm mx-auto mt-2 text-sm font-medium">
                             No matching medicines detected in the regional grid. Try generic names or verified brands.
                         </p>

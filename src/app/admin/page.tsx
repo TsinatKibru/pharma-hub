@@ -10,9 +10,8 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { approvePharmacy, rejectPharmacy } from "@/app/actions/admin";
+import { PharmacyActions } from "./_components/PharmacyActions";
 
 export default async function AdminDashboard() {
     const session = await getServerSession(authOptions);
@@ -29,9 +28,19 @@ export default async function AdminDashboard() {
     return (
         <div className="p-8 bg-slate-950 min-h-screen text-slate-100">
             <div className="max-w-6xl mx-auto">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-bold text-teal-400">Admin Approval Dashboard</h1>
-                    <p className="text-slate-400">Review and activate new pharmacy registrations.</p>
+                <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px] uppercase font-black tracking-widest px-3 py-1">Focus Mode</Badge>
+                            <span className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">Pending Approvals Only</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-white tracking-tight">Access Control</h1>
+                        <p className="text-slate-500 font-medium mt-1">Review and gatekeep pharma entity registrations.</p>
+                    </div>
+                    <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/50 backdrop-blur-sm">
+                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1 text-center">Active Queue</p>
+                        <p className="text-3xl font-black text-teal-500 text-center font-mono">{pendingPharmacies.length}</p>
+                    </div>
                 </header>
 
                 <div className="bg-slate-900 rounded-xl border border-slate-800 shadow-xl overflow-hidden">
@@ -65,13 +74,8 @@ export default async function AdminDashboard() {
                                                 PENDING
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <form action={approvePharmacy.bind(null, pharmacy.id)} className="inline">
-                                                <Button size="sm" className="bg-teal-600 hover:bg-teal-700">Approve</Button>
-                                            </form>
-                                            <form action={rejectPharmacy.bind(null, pharmacy.id)} className="inline">
-                                                <Button size="sm" variant="destructive">Reject</Button>
-                                            </form>
+                                        <TableCell className="text-right">
+                                            <PharmacyActions pharmacyId={pharmacy.id} />
                                         </TableCell>
                                     </TableRow>
                                 ))

@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma, getTenantPrisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -31,7 +31,6 @@ export async function addInventoryItem(formData: FormData) {
     const { medicineName, genericName, price, quantity, lowStockThreshold, batchNumber, expiryDate } = validated.data;
 
     try {
-        // 1. Find or create the global Medicine definition
         let medicine = await prisma.medicine.findFirst({
             where: { name: { equals: medicineName, mode: 'insensitive' } }
         });
@@ -42,7 +41,6 @@ export async function addInventoryItem(formData: FormData) {
             });
         }
 
-        // 2. Add to Tenant Inventory
         await prisma.inventory.upsert({
             where: {
                 tenantId_medicineId: {
@@ -73,5 +71,63 @@ export async function addInventoryItem(formData: FormData) {
     } catch (error) {
         console.error("Inventory add error:", error);
         return { error: { general: "Failed to add inventory item" } };
+    }
+}
+
+export async function updateInventoryItem(formData: FormData) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user.tenantId) throw new Error("Unauthorized");
+
+    const tenantId = session.user.tenantId;
+    const data = Object.fromEntries(formData.entries());
+    const inventoryId = formData.get("id") as string;
+
+    const validated = inventorySchema.safeParse(data);
+    if (!validated.success) {
+        return { error: validated.error.flatten().fieldErrors };
+    }
+
+    const { price, quantity, lowStockThreshold, batchNumber, expiryDate } = validated.data;
+
+    try {
+        await prisma.inventory.update({
+            where: {
+                id: inventoryId,
+                tenantId
+            },
+            data: {
+                price,
+                quantity,
+                lowStockThreshold,
+                batchNumber,
+                expiryDate: expiryDate ? new Date(expiryDate) : null,
+            }
+        });
+
+        revalidatePath("/dashboard/inventory");
+        return { success: true };
+    } catch (error) {
+        console.error("Inventory update error:", error);
+        return { error: { general: "Failed to update inventory item" } };
+    }
+}
+
+export async function deleteInventoryItem(id: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user.tenantId) throw new Error("Unauthorized");
+
+    try {
+        await prisma.inventory.delete({
+            where: {
+                id,
+                tenantId: session.user.tenantId
+            }
+        });
+
+        revalidatePath("/dashboard/inventory");
+        return { success: true };
+    } catch (error) {
+        console.error("Inventory delete error:", error);
+        return { error: "Failed to delete item" };
     }
 }

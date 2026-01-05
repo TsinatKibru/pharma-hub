@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AddInventoryDialog } from "@/components/add-inventory-dialog";
+import { DeleteInventoryButton } from "@/components/delete-inventory-button";
 import { Package, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -91,7 +92,10 @@ export default async function InventoryPage() {
                                         {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : "N/A"}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-teal-400">Edit</Button>
+                                        <div className="flex justify-end gap-1">
+                                            <AddInventoryDialog mode="edit" item={item as any} />
+                                            <DeleteInventoryButton id={item.id} name={item.medicine.name} />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))
