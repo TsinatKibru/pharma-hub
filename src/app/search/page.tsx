@@ -4,7 +4,7 @@ import { useState, useEffect as useReactEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, MapPin, Pill, ArrowRight, Info, LayoutGrid, Map as MapIcon } from "lucide-react";
+import { Search, MapPin, Pill, ArrowRight, Info, LayoutGrid, Map as MapIcon, Navigation } from "lucide-react";
 import { searchMedicines } from "@/app/actions/search";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -197,11 +197,24 @@ export default function PublicSearchPage() {
                                                             <p className="text-2xl font-black text-slate-100 tracking-tighter font-mono">${pharmacy.price.toFixed(2)}</p>
                                                         </div>
                                                     </div>
-                                                    <Button asChild className="w-full mt-6 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-teal-400 border border-slate-800 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px]">
-                                                        <Link href={`/pharmacies/${pharmacy.slug}`}>
-                                                            Visit Pharmacy <ArrowRight className="h-3 w-3 ml-2" />
-                                                        </Link>
-                                                    </Button>
+                                                    <div className="flex gap-2 mt-6">
+                                                        <Button asChild className="flex-1 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-teal-400 border border-slate-800 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px]">
+                                                            <Link href={`/pharmacies/${pharmacy.slug}`}>
+                                                                Visit <ArrowRight className="h-3 w-3 ml-2" />
+                                                            </Link>
+                                                        </Button>
+                                                        {pharmacy.location?.lat && pharmacy.location?.lng && (
+                                                            <Button asChild variant="outline" className="flex-1 bg-teal-600/5 hover:bg-teal-600/10 text-teal-500 border-teal-500/20 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px]">
+                                                                <a
+                                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${pharmacy.location.lat},${pharmacy.location.lng}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    Directions <Navigation className="h-3 w-3 ml-2" />
+                                                                </a>
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </CardContent>
                                             </Card>
                                         ))}
