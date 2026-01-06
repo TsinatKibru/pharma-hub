@@ -13,17 +13,34 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PharmacyActions } from "./_components/PharmacyActions";
 
-export default async function AdminDashboard() {
+import Link from "next/link";
+
+export default async function AdminDashboard({
+    searchParams
+}: {
+    searchParams: Promise<{ page?: string }>
+}) {
+    const { page: pageStr } = await searchParams;
     const session = await getServerSession(authOptions);
 
     if (session?.user.role !== "ADMIN") {
         redirect("/login");
     }
 
-    const pendingPharmacies = await prisma.tenant.findMany({
-        where: { status: "PENDING" },
-        orderBy: { createdAt: "desc" },
-    });
+    const page = parseInt(pageStr || "1");
+    const pageSize = 4;
+
+    const [pendingPharmacies, total] = await Promise.all([
+        prisma.tenant.findMany({
+            where: { status: "PENDING" },
+            orderBy: { createdAt: "desc" },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        }),
+        prisma.tenant.count({ where: { status: "PENDING" } })
+    ]);
+
+    const totalPages = Math.ceil(total / pageSize);
 
     return (
         <div className="p-8 bg-slate-950 min-h-screen text-slate-100">
@@ -83,6 +100,32 @@ export default async function AdminDashboard() {
                         </TableBody>
                     </Table>
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4 mt-8">
+                        <Link
+                            href={`/admin?page=${Math.max(1, page - 1)}`}
+                            className={`
+                                px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-teal-400 rounded-xl text-sm font-bold transition-all
+                                ${page === 1 ? 'pointer-events-none opacity-50' : ''}
+                            `}
+                        >
+                            Previous
+                        </Link>
+                        <span className="text-xs font-black text-slate-600 uppercase tracking-widest">
+                            Page {page} of {totalPages}
+                        </span>
+                        <Link
+                            href={`/admin?page=${Math.min(totalPages, page + 1)}`}
+                            className={`
+                                px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-teal-400 rounded-xl text-sm font-bold transition-all
+                                ${page === totalPages ? 'pointer-events-none opacity-50' : ''}
+                            `}
+                        >
+                            Next
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );

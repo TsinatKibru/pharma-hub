@@ -19,6 +19,8 @@ export default function PublicSearchPage() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [sortBy, setSortBy] = useState<"distance" | "price">("distance");
     const [selectedCategory, setSelectedCategory] = useState("all");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 4;
 
     const categories = [
         "all", "antibiotics", "pain relief", "cardiac", "vitamins", "respiratory", "dermatology"
@@ -55,6 +57,7 @@ export default function PublicSearchPage() {
         setLoading(true);
         const data = await searchMedicines(query, categoryToSearch);
         setResults(data);
+        setCurrentPage(1);
         setLoading(false);
     }
 
@@ -117,7 +120,20 @@ export default function PublicSearchPage() {
         });
 
         return { ...med, pharmacies: pharmaciesWithDistance };
+    }).sort((a, b) => {
+        if (sortBy === "price") {
+            const aMin = Math.min(...a.pharmacies.map((p: any) => p.price));
+            const bMin = Math.min(...b.pharmacies.map((p: any) => p.price));
+            return aMin - bMin;
+        }
+        return 0;
     });
+
+    const totalPages = Math.ceil(processedResults.length / itemsPerPage);
+    const paginatedResults = processedResults.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     // Collect all pharmacy markers for the map view
     const allMarkers = processedResults.flatMap((med: any) =>
@@ -232,7 +248,39 @@ export default function PublicSearchPage() {
                 {processedResults.length > 0 ? (
                     view === "list" ? (
                         <div className="max-w-4xl mx-auto space-y-12">
-                            {processedResults.map((medicine: any) => (
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-4 py-6 bg-slate-900/10 rounded-3xl border border-slate-800/50 mb-8">
+                                    <Button
+                                        variant="outline"
+                                        disabled={currentPage === 1}
+                                        onClick={() => {
+                                            setCurrentPage(p => Math.max(1, p - 1));
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="bg-slate-950/50 border-slate-800 text-slate-400 hover:text-teal-400 rounded-2xl px-6 py-4 font-bold uppercase tracking-widest text-[9px]"
+                                    >
+                                        Previous
+                                    </Button>
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.3em]">Grid Page</span>
+                                        <span className="text-xs font-black text-slate-400">
+                                            {currentPage} <span className="text-slate-800 mx-1">/</span> {totalPages}
+                                        </span>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => {
+                                            setCurrentPage(p => Math.min(totalPages, p + 1));
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="bg-slate-950/50 border-slate-800 text-slate-400 hover:text-teal-400 rounded-2xl px-6 py-4 font-bold uppercase tracking-widest text-[9px]"
+                                    >
+                                        Next
+                                    </Button>
+                                </div>
+                            )}
+                            {paginatedResults.map((medicine: any) => (
                                 <div key={medicine.id} className="space-y-6">
                                     <div className="flex items-center gap-4">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
@@ -317,6 +365,7 @@ export default function PublicSearchPage() {
                                     </div>
                                 </div>
                             ))}
+
                         </div>
                     ) : (
                         <div className="h-[600px] w-full rounded-2xl border border-slate-900 overflow-hidden shadow-2xl relative">

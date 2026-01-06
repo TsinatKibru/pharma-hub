@@ -24,6 +24,13 @@ async function main() {
         { name: "Lisinopril", genericName: "Lisinopril 10mg", category: "cardiac", description: "Heart medicine" },
         { name: "Centrum", genericName: "Multivitamins", category: "vitamins", description: "Daily vitamins" },
         { name: "Ventolin", genericName: "Salbutamol", category: "respiratory", description: "Asthma inhaler" },
+        { name: "Augmentin", genericName: "Amoxicillin/Clavulanate", category: "antibiotics", description: "Combination antibiotic" },
+        { name: "Ibuprofen", genericName: "Advil/Motrin 200mg", category: "pain relief", description: "Anti-inflammatory pain relief" },
+        { name: "Atorvastatin", genericName: "Lipitor 20mg", category: "cardiac", description: "Cholesterol medicine" },
+        { name: "Vitamin C", genericName: "Ascorbic Acid 500mg", category: "vitamins", description: "Immune support" },
+        { name: "Fluticasone", genericName: "Flonase", category: "respiratory", description: "Nasal allergy spray" },
+        { name: "Hydrocortisone", genericName: "Cortizone-10", category: "dermatology", description: "Itch relief cream" },
+        { name: "Zyrtec", genericName: "Cetirizine 10mg", category: "respiratory", description: "Allergy relief" },
     ];
 
     const seededMedicines = [];

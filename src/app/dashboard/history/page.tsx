@@ -26,7 +26,7 @@ export default async function StockHistoryPage({
     const tenantPrisma = getTenantPrisma(tenantId);
 
     const page = parseInt(pageStr || "1");
-    const pageSize = 10;
+    const pageSize = 4;
     const query = queryStr || "";
 
     // Bypass TS check for stockMovement if it's being stubborn, but use tenantPrisma for safety

@@ -26,6 +26,10 @@ export const getTenantPrisma = (tenantId: string) => {
           args.where = { ...args.where, id: tenantId }
           return query(args)
         },
+        async count({ args, query }) {
+          args.where = { ...args.where, id: tenantId }
+          return query(args)
+        },
       },
       inventory: {
         async findMany({ args, query }) {
@@ -33,6 +37,10 @@ export const getTenantPrisma = (tenantId: string) => {
           return query(args)
         },
         async findFirst({ args, query }) {
+          args.where = { ...args.where, tenantId }
+          return query(args)
+        },
+        async count({ args, query }) {
           args.where = { ...args.where, tenantId }
           return query(args)
         },
@@ -46,6 +54,10 @@ export const getTenantPrisma = (tenantId: string) => {
           args.where = { ...args.where, tenantId }
           return query(args)
         },
+        async count({ args, query }) {
+          args.where = { ...args.where, tenantId }
+          return query(args)
+        },
       },
       stockMovement: {
         async findMany({ args, query }) {
@@ -53,6 +65,10 @@ export const getTenantPrisma = (tenantId: string) => {
           return query(args)
         },
         async findFirst({ args, query }) {
+          args.where = { ...args.where, inventory: { tenantId } }
+          return query(args)
+        },
+        async count({ args, query }) {
           args.where = { ...args.where, inventory: { tenantId } }
           return query(args)
         },

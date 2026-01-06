@@ -38,7 +38,13 @@ export default async function PharmacyDetailPage({ params }: { params: Promise<{
                     <div className="space-y-4">
                         <div className="flex items-center gap-3 text-teal-500 text-sm font-bold uppercase tracking-widest">
                             <span className="px-2 py-1 bg-teal-500/10 rounded border border-teal-500/20">Verified Partner</span>
-                            {pharmacy.openingHours && <span>• Openned: {pharmacy.openingHours}</span>}
+                            {pharmacy.openingHours && (
+                                <span>•
+                                    {typeof pharmacy.openingHours === 'object'
+                                        ? " Schedule Available"
+                                        : ` Opened: ${pharmacy.openingHours}`}
+                                </span>
+                            )}
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black tracking-tight">{pharmacy.name}</h1>
                         <p className="text-slate-400 text-lg max-w-xl flex items-center gap-2">
@@ -101,14 +107,38 @@ export default async function PharmacyDetailPage({ params }: { params: Promise<{
                                     Contact Pharmacy
                                 </Button>
                                 <div className="space-y-6">
-                                    <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-950 border border-slate-900">
-                                        <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800 shadow-inner">
-                                            <Clock className="h-5 w-5 text-teal-700" />
+                                    <div className="flex flex-col gap-4 p-4 rounded-xl bg-slate-950 border border-slate-900">
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800 shadow-inner">
+                                                <Clock className="h-5 w-5 text-teal-700" />
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest leading-none mb-1">Operating Hours</div>
+                                                <div className="text-sm text-slate-300 font-bold">
+                                                    {typeof pharmacy.openingHours === 'object' && pharmacy.openingHours !== null
+                                                        ? "Weekly Schedule"
+                                                        : (pharmacy.openingHours || "8:00 AM - 10:00 PM")}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest leading-none mb-1">Operating Hours</div>
-                                            <div className="text-sm text-slate-300 font-bold">{pharmacy.openingHours || "8:00 AM - 10:00 PM"}</div>
-                                        </div>
+
+                                        {typeof pharmacy.openingHours === 'object' && pharmacy.openingHours !== null && (
+                                            <div className="grid gap-2 pt-2 border-t border-slate-900/50 mt-1">
+                                                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                                                    const schedule = (pharmacy.openingHours as any)[day];
+                                                    if (!schedule) return null;
+                                                    return (
+                                                        <div key={day} className="flex justify-between items-center text-[10px]">
+                                                            <span className="text-slate-500 uppercase font-bold tracking-tight w-20">{day}</span>
+                                                            <div className="h-px flex-1 bg-slate-900/50 mx-2" />
+                                                            <span className={`font-mono font-bold ${schedule.closed ? 'text-rose-500/80' : 'text-slate-400'}`}>
+                                                                {schedule.closed ? 'CLOSED' : `${schedule.open} - ${schedule.close}`}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Map Visualization */}

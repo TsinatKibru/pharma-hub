@@ -28,7 +28,7 @@ export function InventoryClient({ initialItems }: { initialItems: any[] }) {
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState<"all" | "low" | "out" | "in">("all");
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 4;
 
     const filteredItems = initialItems.filter(item => {
         const matchesSearch = item.medicine.name.toLowerCase().includes(search.toLowerCase()) ||

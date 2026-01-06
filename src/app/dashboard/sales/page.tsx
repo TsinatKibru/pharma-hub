@@ -12,27 +12,43 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogSaleDialog } from "@/components/log-sale-dialog";
 import { ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
-export default async function SalesPage() {
+export default async function SalesPage({
+    searchParams
+}: {
+    searchParams: Promise<{ page?: string }>
+}) {
+    const { page: pageStr } = await searchParams;
     const session = await getServerSession(authOptions);
     const tenantId = session?.user.tenantId!;
+    const tenantPrisma = getTenantPrisma(tenantId);
 
-    const sales = await prisma.sale.findMany({
-        where: { tenantId },
-        include: {
-            items: {
-                include: {
-                    inventory: {
-                        include: { medicine: true }
+    const page = parseInt(pageStr || "1");
+    const pageSize = 4;
+
+    const [sales, total] = await Promise.all([
+        tenantPrisma.sale.findMany({
+            include: {
+                items: {
+                    include: {
+                        inventory: {
+                            include: { medicine: true }
+                        }
                     }
                 }
-            }
-        },
-        orderBy: { createdAt: "desc" },
-    });
+            },
+            orderBy: { createdAt: "desc" },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        }),
+        tenantPrisma.sale.count()
+    ]);
 
-    const rawInventory = await prisma.inventory.findMany({
-        where: { tenantId, quantity: { gt: 0 } },
+    const totalPages = Math.ceil(total / pageSize);
+
+    const rawInventory = await tenantPrisma.inventory.findMany({
+        where: { quantity: { gt: 0 } },
         include: { medicine: true },
     });
 
@@ -89,6 +105,32 @@ export default async function SalesPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-8">
+                    <Link
+                        href={`/dashboard/sales?page=${Math.max(1, page - 1)}`}
+                        className={`
+                            px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-teal-400 rounded-xl text-sm font-bold transition-all
+                            ${page === 1 ? 'pointer-events-none opacity-50' : ''}
+                        `}
+                    >
+                        Previous
+                    </Link>
+                    <span className="text-xs font-black text-slate-600 uppercase tracking-widest">
+                        Page {page} of {totalPages}
+                    </span>
+                    <Link
+                        href={`/dashboard/sales?page=${Math.min(totalPages, page + 1)}`}
+                        className={`
+                            px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-teal-400 rounded-xl text-sm font-bold transition-all
+                            ${page === totalPages ? 'pointer-events-none opacity-50' : ''}
+                        `}
+                    >
+                        Next
+                    </Link>
+                </div>
+            )}
         </div>
     );
 }
