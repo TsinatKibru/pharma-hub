@@ -22,7 +22,13 @@ export async function logSale(formData: FormData) {
     const validated = saleSchema.safeParse(data);
 
     if (!validated.success) {
-        return { error: validated.error.flatten().fieldErrors };
+        return {
+            success: false as const,
+            error: {
+                fieldErrors: validated.error.flatten().fieldErrors,
+                general: "Invalid input data"
+            }
+        };
     }
 
     const { inventoryId, quantity, unitPrice } = validated.data;
@@ -69,10 +75,13 @@ export async function logSale(formData: FormData) {
 
             revalidatePath("/dashboard/sales");
             revalidatePath("/dashboard");
-            return { success: true, saleId: sale.id };
+            return { success: true as const, saleId: sale.id };
         });
     } catch (error: any) {
         console.error("Sale logging error:", error);
-        return { error: { general: error.message || "Failed to log sale" } };
+        return {
+            success: false as const,
+            error: { general: error.message || "Failed to log sale" }
+        };
     }
 }

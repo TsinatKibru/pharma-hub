@@ -151,7 +151,7 @@ export default async function PharmacyDetailPage({ params }: { params: Promise<{
                                             <div className="h-64 w-full relative">
                                                 <MapDisplay
                                                     center={{ lat: pharmacy.lat, lng: pharmacy.lng }}
-                                                    markers={[{ id: pharmacy.id, lat: pharmacy.lat, lng: pharmacy.lng, title: pharmacy.name }]}
+                                                    markers={[{ id: pharmacy.id, lat: pharmacy.lat, lng: pharmacy.lng, pharmacyName: pharmacy.name }]}
                                                 />
                                             </div>
                                         </div>
