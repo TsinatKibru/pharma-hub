@@ -7,6 +7,7 @@ import { updateTenantSettings } from "@/app/actions/settings";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LocationPicker } from "@/components/map-loader";
+import { BusinessHoursEditor } from "@/components/business-hours-editor";
 
 export default function SettingsForm({ tenant }: { tenant: any }) {
     const [location, setLocation] = useState({
@@ -40,15 +41,9 @@ export default function SettingsForm({ tenant }: { tenant: any }) {
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="openingHours" className="text-xs font-bold text-slate-500 uppercase">Opening Hours</Label>
-                        <Input
-                            id="openingHours"
-                            name="openingHours"
-                            defaultValue={tenant.openingHours || ""}
-                            placeholder="e.g. 8:00 AM - 10:00 PM"
-                            className="bg-slate-900/50 border-slate-800 text-slate-100 py-6"
-                        />
+                    <div className="space-y-4 col-span-2 border-t border-slate-800/50 pt-6">
+                        <Label className="text-xs font-bold text-teal-500 uppercase">Operational Schedule</Label>
+                        <BusinessHoursEditor initialValue={tenant.openingHours} />
                     </div>
                 </div>
 

@@ -11,7 +11,13 @@ export async function updateTenantSettings(formData: FormData) {
 
     const name = formData.get("name") as string;
     const address = formData.get("address") as string;
-    const openingHours = formData.get("openingHours") as string;
+    const openingHoursStr = formData.get("openingHours") as string;
+    let openingHours = null;
+    try {
+        openingHours = openingHoursStr ? JSON.parse(openingHoursStr) : null;
+    } catch (e) {
+        openingHours = openingHoursStr; // Fallback to raw string if not JSON
+    }
     const lat = formData.get("lat") ? parseFloat(formData.get("lat") as string) : null;
     const lng = formData.get("lng") ? parseFloat(formData.get("lng") as string) : null;
 

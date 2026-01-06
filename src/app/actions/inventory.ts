@@ -41,7 +41,7 @@ export async function addInventoryItem(formData: FormData) {
             });
         }
 
-        await prisma.inventory.upsert({
+        const inventory = await prisma.inventory.upsert({
             where: {
                 tenantId_medicineId: {
                     tenantId,
@@ -63,6 +63,17 @@ export async function addInventoryItem(formData: FormData) {
                 lowStockThreshold,
                 batchNumber,
                 expiryDate: expiryDate ? new Date(expiryDate) : null,
+            }
+        });
+
+        // Record stock movement
+        await prisma.stockMovement.create({
+            data: {
+                inventoryId: inventory.id,
+                userId: session.user.id,
+                type: inventory.createdAt === inventory.updatedAt ? "INITIAL" : "RESTOCK",
+                quantity,
+                reason: inventory.createdAt === inventory.updatedAt ? "Initial stock entry" : "Manual restock",
             }
         });
 
@@ -90,6 +101,15 @@ export async function updateInventoryItem(formData: FormData) {
     const { price, quantity, lowStockThreshold, batchNumber, expiryDate } = validated.data;
 
     try {
+        const currentInventory = await prisma.inventory.findUnique({
+            where: { id: inventoryId, tenantId },
+            select: { quantity: true }
+        });
+
+        if (!currentInventory) throw new Error("Inventory item not found");
+
+        const quantityDelta = quantity - currentInventory.quantity;
+
         await prisma.inventory.update({
             where: {
                 id: inventoryId,
@@ -103,6 +123,19 @@ export async function updateInventoryItem(formData: FormData) {
                 expiryDate: expiryDate ? new Date(expiryDate) : null,
             }
         });
+
+        // Record adjustment if quantity changed
+        if (quantityDelta !== 0) {
+            await prisma.stockMovement.create({
+                data: {
+                    inventoryId,
+                    userId: session.user.id,
+                    type: "ADJUSTMENT",
+                    quantity: quantityDelta,
+                    reason: "Manual adjustment",
+                }
+            });
+        }
 
         revalidatePath("/dashboard/inventory");
         return { success: true };

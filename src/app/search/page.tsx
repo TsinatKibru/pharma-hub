@@ -18,6 +18,11 @@ export default function PublicSearchPage() {
     const [view, setView] = useState<"list" | "map">("list");
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [sortBy, setSortBy] = useState<"distance" | "price">("distance");
+    const [selectedCategory, setSelectedCategory] = useState("all");
+
+    const categories = [
+        "all", "antibiotics", "pain relief", "cardiac", "vitamins", "respiratory", "dermatology"
+    ];
 
     useReactEffect(() => {
         if (navigator.geolocation) {
@@ -33,15 +38,47 @@ export default function PublicSearchPage() {
         }
     }, []);
 
-    async function handleSearch(e?: React.FormEvent) {
+    async function handleSearch(e?: React.FormEvent, categoryOverride?: string) {
         if (e) e.preventDefault();
-        if (query.length < 2) return;
+        const categoryToSearch = categoryOverride || selectedCategory;
+
+        // Allow searching by category even if query is empty
+        if (!query && categoryToSearch === "all") {
+            // For browsing-only mode, we can fetch all or featured
+            setLoading(true);
+            const data = await searchMedicines("", "all");
+            setResults(data);
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
-        const data = await searchMedicines(query);
+        const data = await searchMedicines(query, categoryToSearch);
         setResults(data);
         setLoading(false);
     }
+
+    const checkIsOpen = (openingHours: any) => {
+        if (!openingHours || typeof openingHours !== 'object') return null;
+
+        const now = new Date();
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const currentDay = days[now.getDay()];
+        const schedule = openingHours[currentDay];
+
+        if (!schedule || schedule.closed) return false;
+        if (!schedule.open || !schedule.close) return true; // Assume open if specified but no times
+
+        const [nowH, nowM] = [now.getHours(), now.getMinutes()];
+        const [openH, openM] = schedule.open.split(':').map(Number);
+        const [closeH, closeM] = schedule.close.split(':').map(Number);
+
+        const nowTotal = nowH * 60 + nowM;
+        const openTotal = openH * 60 + openM;
+        const closeTotal = closeH * 60 + closeM;
+
+        return nowTotal >= openTotal && nowTotal <= closeTotal;
+    };
 
     // Process results with distance and low price detection
     const processedResults = results.map(med => {
@@ -123,6 +160,25 @@ export default function PublicSearchPage() {
                                 {loading ? "Searching..." : "Search"}
                             </Button>
                         </form>
+
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {categories.map((cat) => (
+                                <Badge
+                                    key={cat}
+                                    variant={selectedCategory === cat ? "default" : "outline"}
+                                    className={`cursor-pointer capitalize px-4 py-1.5 rounded-full transition-all ${selectedCategory === cat
+                                        ? "bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-900/20"
+                                        : "text-slate-400 border-slate-700 hover:border-teal-500/50"
+                                        }`}
+                                    onClick={() => {
+                                        setSelectedCategory(cat);
+                                        handleSearch(undefined, cat);
+                                    }}
+                                >
+                                    {cat}
+                                </Badge>
+                            ))}
+                        </div>
 
                         {processedResults.length > 0 && (
                             <div className="flex flex-wrap justify-center gap-4">
@@ -207,9 +263,21 @@ export default function PublicSearchPage() {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-tighter mt-1">
-                                                        <MapPin className="h-3 w-3 text-teal-600" />
-                                                        <span className="truncate">{pharmacy.address}</span>
+                                                    <div className="flex items-center gap-4 mt-1">
+                                                        <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-tighter">
+                                                            <MapPin className="h-3 w-3 text-teal-600" />
+                                                            <span className="truncate">{pharmacy.address}</span>
+                                                        </div>
+                                                        {checkIsOpen(pharmacy.openingHours) !== null && (
+                                                            <Badge
+                                                                className={`text-[8px] font-black uppercase rounded-full px-2 border-none ${checkIsOpen(pharmacy.openingHours)
+                                                                    ? "bg-emerald-500/10 text-emerald-500"
+                                                                    : "bg-rose-500/10 text-rose-500"
+                                                                    }`}
+                                                            >
+                                                                {checkIsOpen(pharmacy.openingHours) ? "Open Now" : "Closed"}
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 </CardHeader>
                                                 <CardContent>

@@ -31,10 +31,15 @@ export default async function SalesPage() {
         orderBy: { createdAt: "desc" },
     });
 
-    const inventory = await prisma.inventory.findMany({
+    const rawInventory = await prisma.inventory.findMany({
         where: { tenantId, quantity: { gt: 0 } },
         include: { medicine: true },
     });
+
+    const inventory = rawInventory.map(item => ({
+        ...item,
+        price: Number(item.price)
+    }));
 
     return (
         <div className="space-y-6">

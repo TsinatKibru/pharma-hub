@@ -7,7 +7,8 @@ import {
     Settings,
     LogOut,
     ChevronRight,
-    User
+    User,
+    History as HistoryIcon
 } from "lucide-react";
 import {
     Sidebar,
@@ -29,12 +30,18 @@ import { usePathname } from "next/navigation";
 export function AppSidebar({ user }: { user: any }) {
     const pathname = usePathname();
 
-    const items = [
-        { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-        { title: "Inventory", url: "/dashboard/inventory", icon: Package },
-        { title: "Sales", url: "/dashboard/sales", icon: ShoppingCart },
-        { title: "Settings", url: "/dashboard/settings", icon: Settings },
-    ];
+    const items = user.role === "ADMIN"
+        ? [
+            { title: "Admin Panel", url: "/admin", icon: LayoutDashboard },
+            { title: "Global Settings", url: "/admin/settings", icon: Settings }, // Example for admin
+        ]
+        : [
+            { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+            { title: "Inventory", url: "/dashboard/inventory", icon: Package },
+            { title: "Stock History", url: "/dashboard/history", icon: HistoryIcon },
+            { title: "Sales", url: "/dashboard/sales", icon: ShoppingCart },
+            { title: "Settings", url: "/dashboard/settings", icon: Settings },
+        ];
 
     return (
         <Sidebar className="border-r border-slate-900 bg-[#020617] shadow-none">
