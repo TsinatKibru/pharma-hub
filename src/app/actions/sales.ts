@@ -30,22 +30,27 @@ export async function logSale(formData: FormData) {
 
     try {
         return await prisma.$transaction(async (tx) => {
-            // 1. Get the inventory item to find the medicineId
+            // 1. Get the inventory item to find the medicineId - STRICT TENANT SCOPING
             const inventory = await tx.inventory.findUnique({
-                where: { id: inventoryId },
+                where: {
+                    id: inventoryId,
+                    tenantId: tenantId // Critical: Ensure the item belongs to THIS tenant
+                },
                 select: { medicineId: true, quantity: true }
             });
 
-            if (!inventory) throw new Error("Product not found in inventory");
+            if (!inventory) throw new Error("Product not found or unauthorized");
             if (inventory.quantity < quantity) throw new Error("Insufficient stock");
 
             // 2. Atomic stock update (using our helper logic inside transaction)
             // Note: We'll repeat the update logic here to stay within the same transaction object 'tx'
             await tx.$executeRaw`
-        UPDATE "Inventory"
-        SET "quantity" = "quantity" - ${quantity}, "updatedAt" = NOW()
-        WHERE "id" = ${inventoryId} AND "quantity" >= ${quantity}
-      `;
+                UPDATE "Inventory"
+                SET "quantity" = "quantity" - ${quantity}, "updatedAt" = NOW()
+                WHERE "id" = ${inventoryId} 
+                AND "tenantId" = ${tenantId}
+                AND "quantity" >= ${quantity}
+            `;
 
             // 3. Create Sale record
             const sale = await tx.sale.create({

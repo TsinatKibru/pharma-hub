@@ -10,6 +10,48 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { MapDisplay } from "@/components/map-loader";
 import { calculateDistance, formatDistance } from "@/lib/geo-utils";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function SearchSkeleton() {
+    return (
+        <div className="space-y-12">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-12 w-12 rounded-2xl" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-48" />
+                            <Skeleton className="h-3 w-32" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[1, 2].map((j) => (
+                            <Card key={j} className="bg-[#0c1120] border-slate-900 border-none">
+                                <CardHeader className="pb-3">
+                                    <div className="flex justify-between items-start">
+                                        <Skeleton className="h-5 w-32" />
+                                        <Skeleton className="h-4 w-12" />
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <Skeleton className="h-3 w-3" />
+                                        <Skeleton className="h-3 w-40" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="flex justify-between items-end">
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-2 w-10" />
+                                        <Skeleton className="h-4 w-16" />
+                                    </div>
+                                    <Skeleton className="h-6 w-12" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function PublicSearchPage() {
     const [query, setQuery] = useState("");
@@ -143,7 +185,10 @@ export default function PublicSearchPage() {
                 id: p.id,
                 lat: p.location.lat,
                 lng: p.location.lng,
-                title: `${p.name} - ${med.name} (${p.distance ? formatDistance(p.distance) : '??'})`
+                pharmacyName: p.name,
+                medicineName: med.name,
+                price: p.price,
+                distance: p.distance
             }))
     );
 
@@ -244,8 +289,12 @@ export default function PublicSearchPage() {
             </section>
 
             {/* Results Section */}
-            <section className="max-w-6xl mx-auto mt-12 px-4">
-                {processedResults.length > 0 ? (
+            <section className="max-w-6xl mx-auto mt-12 px-4 min-h-[400px]">
+                {loading ? (
+                    <div className="max-w-4xl mx-auto">
+                        <SearchSkeleton />
+                    </div>
+                ) : processedResults.length > 0 ? (
                     view === "list" ? (
                         <div className="max-w-4xl mx-auto space-y-12">
                             {totalPages > 1 && (

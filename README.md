@@ -19,21 +19,23 @@ Traditional pharmacy management often lacks transparency for patients and scalab
 ## 🚀 Key Features
 
 ### 🏢 Pharmacy Operations
-- **Self-Service Onboarding**: easy registration workflow for new pharmacies.
+- **Self-Service Onboarding**: Easy registration workflow for new pharmacies.
 - **Admin Approval**: Manual verification of licenses by platform admins before activation.
 - **Atomic Inventory**: Prevents race conditions during high-volume sales.
-- **Sales Analytics**: Real-time sales logging with automatic stock deduction.
-- **Low Stock Alerts**: Visual indicators for items needing restock.
+- **Stock Audit Trails**: Comprehensive `StockMovement` history for every inventory change.
+- **Business Hours Editor**: Interactive schedule management with "Open Now" status logic.
+- **Sales Analytics**: Real-time sales logging with strict tenant-scoping security.
 
 ### 🔍 Public Discovery
-- **Global Search**: Search by brand name or generic active ingredients.
-- **Price Comparison**: Highlighting "Best Price Nearby" for search results.
-- **Pharmacy Profiles**: Detailed views with location, contact info, and public inventory.
-- **Real-time Availability**: Status badges (In Stock / Limited Stock) based on live inventory.
+- **Global Search**: Search by brand name or generic active ingredients with category filters.
+- **Price comparison**: Highlighting "Lowest Price" badge and sorting by distance/price.
+- **Interactive Maps**: Map view with interactive popups showing price, status, and Google Maps directions.
+- **Premium UX**: Skeleton loading states for search and map interactions.
 
 ### 🛡️ Technical Excellence
-- **Database Multi-tenancy**: Shared-schema isolation using Prisma Client Extensions.
-- **Modern Tech Stack**: Next.js 15 (App Router), Shadcn UI, and PostgreSQL.
+- **Database Multi-tenancy**: Shared-schema isolation using Prisma Client Extensions and tenant-scoped `count` operations.
+- **React 19 & Next.js 16**: Utilizing the latest React features and Next.js App Router.
+- **Atomic Concurrency**: Raw SQL updates for stock consistency under heavy load.
 - **Role-Based Access**: Granular control for ADMIN, OWNER, and STAFF roles.
 
 ## 🛠️ Getting Started

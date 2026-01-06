@@ -25,7 +25,15 @@ const TealIcon = L.divIcon({
 interface MapDisplayProps {
     center: { lat: number; lng: number };
     zoom?: number;
-    markers?: Array<{ id: string; lat: number; lng: number; title?: string }>;
+    markers?: Array<{
+        id: string;
+        lat: number;
+        lng: number;
+        pharmacyName?: string;
+        medicineName?: string;
+        price?: number | string;
+        distance?: number;
+    }>;
     className?: string;
 }
 
@@ -78,11 +86,31 @@ export function MapDisplay({ center, zoom = 15, markers = [], className }: MapDi
                         position={[marker.lat, marker.lng]}
                         icon={TealIcon}
                     >
-                        {marker.title && (
-                            <Popup>
-                                <div className="text-xs font-bold text-slate-900">{marker.title}</div>
-                            </Popup>
-                        )}
+                        <Popup>
+                            <div className="p-1 space-y-2 min-w-[140px]">
+                                <div>
+                                    <div className="text-[10px] font-black text-teal-500 uppercase tracking-widest leading-none mb-1">
+                                        {marker.pharmacyName}
+                                    </div>
+                                    <div className="text-sm font-bold text-slate-900 leading-tight">
+                                        {marker.medicineName}
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                                    <span className="text-xs font-black text-rose-600 font-mono">
+                                        ${Number(marker.price).toFixed(2)}
+                                    </span>
+                                    <a
+                                        href={`https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[9px] font-black text-teal-600 uppercase tracking-widest hover:underline flex items-center gap-1"
+                                    >
+                                        Directions
+                                    </a>
+                                </div>
+                            </div>
+                        </Popup>
                     </Marker>
                 ))}
             </MapContainer>
