@@ -120,6 +120,18 @@ export default function RegisterPage() {
                                 <p className="text-xs text-red-400">{(error.address as string[])[0]}</p>
                             )}
                         </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="licenseFile">License Document (PDF or Image)</Label>
+                            <Input
+                                id="licenseFile"
+                                name="licenseFile"
+                                type="file"
+                                accept="application/pdf,image/*"
+                                required
+                                className="bg-slate-800 border-slate-700 focus:border-teal-500 focus:ring-teal-500 file:bg-slate-900 file:text-teal-400 file:border-none file:px-4 file:py-2 file:rounded-lg file:mr-4 file:cursor-pointer hover:file:bg-teal-950 transition-all"
+                            />
+                        </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
                         <Button

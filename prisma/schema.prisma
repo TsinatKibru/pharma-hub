@@ -36,6 +36,7 @@ model Tenant {
   lat           Float?
   lng           Float?
   licenseNumber String?
+  licenseUrl    String?
   status        TenantStatus @default(PENDING)
   openingHours  Json?        // Structured: { monday: { open: "08:00", close: "20:00" }, ... }
   createdAt     DateTime     @default(now())

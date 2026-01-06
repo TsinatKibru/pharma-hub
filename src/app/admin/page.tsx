@@ -84,10 +84,24 @@ export default async function AdminDashboard({
                                     <TableRow key={pharmacy.id} className="border-slate-800">
                                         <TableCell className="font-semibold">{pharmacy.name}</TableCell>
                                         <TableCell>{pharmacy.email}</TableCell>
-                                        <TableCell>{pharmacy.licenseNumber}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="text-slate-200">{pharmacy.licenseNumber}</span>
+                                                {pharmacy.licenseUrl && (
+                                                    <a
+                                                        href={pharmacy.licenseUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-[10px] text-teal-500 hover:text-teal-400 font-black uppercase tracking-widest mt-1 flex items-center gap-1"
+                                                    >
+                                                        View Document
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{pharmacy.address}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className="text-yellow-400 border-yellow-400/50">
+                                            <Badge variant="outline" className="text-amber-400 border-amber-400/50 bg-amber-400/5">
                                                 PENDING
                                             </Badge>
                                         </TableCell>

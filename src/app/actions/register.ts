@@ -36,6 +36,17 @@ export async function registerPharmacy(formData: FormData) {
         const hashedPassword = await bcrypt.hash(password, 10);
         const slug = pharmacyName.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
 
+        // Handle File Upload
+        const licenseFile = formData.get("licenseFile") as File;
+        let licenseUrl = null;
+
+        if (licenseFile && licenseFile.size > 0) {
+            const arrayBuffer = await licenseFile.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const { uploadToCloudinary } = await import("@/lib/cloudinary");
+            licenseUrl = await uploadToCloudinary(buffer, "licenses") as string;
+        }
+
         // Create Tenant and User in a transaction
         await prisma.$transaction(async (tx) => {
             const tenant = await tx.tenant.create({
@@ -45,6 +56,7 @@ export async function registerPharmacy(formData: FormData) {
                     slug,
                     address,
                     licenseNumber,
+                    licenseUrl,
                     status: "PENDING",
                 },
             });
