@@ -392,7 +392,7 @@ export default function PublicSearchPage() {
                                                     </div>
                                                     <div className="flex gap-2 mt-6">
                                                         <Button asChild className="flex-1 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-teal-400 border border-slate-800 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px]">
-                                                            <Link href={`/pharmacies/${pharmacy.slug}`}>
+                                                            <Link href={`/pharmacies/${pharmacy.slug}?medicineId=${medicine.id}`}>
                                                                 Visit <ArrowRight className="h-3 w-3 ml-2" />
                                                             </Link>
                                                         </Button>
