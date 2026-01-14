@@ -11,37 +11,42 @@ export async function createBooking(data: {
     quantity: number;
     tenantId: string;
 }) {
-    const session = await getServerSession(authOptions);
+    try {
+        const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
-        throw new Error("You must be logged in to book a pick-up.");
+        if (!session?.user?.id) {
+            return { error: "You must be logged in to book a pick-up." };
+        }
+
+        // Check if inventory exists and has enough stock
+        const inventory = await prisma.inventory.findUnique({
+            where: { id: data.inventoryId },
+        });
+
+        if (!inventory || inventory.quantity < data.quantity) {
+            return { error: "Insufficient stock available." };
+        }
+
+        // Generate a 6-digit alphanumeric pickup code
+        const pickupCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        const booking = await prisma.booking.create({
+            data: {
+                inventoryId: data.inventoryId,
+                quantity: data.quantity,
+                tenantId: data.tenantId,
+                userId: session.user.id,
+                pickupCode,
+                status: "PENDING",
+            },
+        });
+
+        revalidatePath(`/pharmacies/[slug]`);
+        return booking;
+    } catch (error) {
+        console.error("Booking error:", error);
+        return { error: "Failed to create booking. Please try again." };
     }
-
-    // Check if inventory exists and has enough stock
-    const inventory = await prisma.inventory.findUnique({
-        where: { id: data.inventoryId },
-    });
-
-    if (!inventory || inventory.quantity < data.quantity) {
-        throw new Error("Insufficient stock available.");
-    }
-
-    // Generate a 6-digit alphanumeric pickup code
-    const pickupCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-    const booking = await prisma.booking.create({
-        data: {
-            inventoryId: data.inventoryId,
-            quantity: data.quantity,
-            tenantId: data.tenantId,
-            userId: session.user.id,
-            pickupCode,
-            status: "PENDING",
-        },
-    });
-
-    revalidatePath(`/pharmacies/[slug]`);
-    return booking;
 }
 
 export async function updateBookingStatus(bookingId: string, status: BookingStatus) {

@@ -34,18 +34,26 @@ export function BookPickupDialog({
     const handleConfirm = async () => {
         setLoading(true);
         try {
-            const result = await createBooking({
+            const result: any = await createBooking({
                 inventoryId,
                 quantity,
                 tenantId
             });
+
+            if (result.error) {
+                toast.error("Reservation failed", {
+                    description: result.error,
+                });
+                return;
+            }
+
             setBookingSuccess(result);
             toast.success("Reservation successful!", {
                 description: `Your pickup code is ${result.pickupCode}`,
             });
         } catch (error: any) {
-            toast.error("Reservation failed", {
-                description: error.message,
+            toast.error("An unexpected error occurred", {
+                description: "Please try again later.",
             });
         } finally {
             setLoading(false);
