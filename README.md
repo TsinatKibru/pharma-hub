@@ -32,6 +32,12 @@ Traditional pharmacy management often lacks transparency for patients and scalab
 - **Interactive Maps**: Map view with interactive popups showing price, status, and Google Maps directions.
 - **Premium UX**: Skeleton loading states for search and map interactions.
 
+### 🩺 Customer & Booking Experience
+- **Patient Registration**: New `PATIENT` role with dedicated signup flow (`/register/customer`).
+- **Medicine Reservation**: Authenticated users can book medicines for pickup, generating a unique **6-character verification code**.
+- **Booking Dashboard**: Patients can track their reservation status (Pending/Ready) via a glassmorphic "My Bookings" dialog.
+- **Proactive UX**: Instant login redirects (hard navigation) to prevent session lag and ensure role-specific landing pages.
+
 ### 🛡️ Technical Excellence
 - **Database Multi-tenancy**: Shared-schema isolation using Prisma Client Extensions and tenant-scoped `count` operations.
 - **React 19 & Next.js 16**: Utilizing the latest React features and Next.js App Router.

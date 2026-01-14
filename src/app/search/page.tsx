@@ -11,6 +11,7 @@ import Link from "next/link";
 import { MapDisplay } from "@/components/map-loader";
 import { calculateDistance, formatDistance } from "@/lib/geo-utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PatientMenu } from "@/components/patient-menu";
 
 function SearchSkeleton() {
     return (
@@ -193,7 +194,11 @@ export default function PublicSearchPage() {
     );
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+        <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 relative">
+            <div className="absolute top-6 right-6 z-50">
+                <PatientMenu />
+            </div>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-b from-slate-900 to-slate-950 py-16 px-4 border-b border-slate-800">
                 <div className="max-w-4xl mx-auto text-center space-y-6">
