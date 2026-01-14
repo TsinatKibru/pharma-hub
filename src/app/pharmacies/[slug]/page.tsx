@@ -126,6 +126,8 @@ export default async function PharmacyDetailPage({
                         <PharmacyInventoryExplorer
                             inventories={availableInventories}
                             initialMedicineId={Array.isArray(medicineId) ? medicineId[0] : medicineId}
+                            pharmacyName={pharmacy.name}
+                            tenantId={pharmacy.id}
                         />
                     </div>
 

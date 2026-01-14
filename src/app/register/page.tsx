@@ -141,11 +141,9 @@ export default function RegisterPage() {
                         >
                             {loading ? "Registering..." : "Create Account"}
                         </Button>
-                        <div className="text-center text-sm text-slate-400">
-                            Already have an account?{" "}
-                            <Link href="/login" className="text-teal-400 hover:underline hover:text-teal-300">
-                                Sign In
-                            </Link>
+                        <div className="text-center text-xs text-slate-500 space-y-2">
+                            <p>Are you a patient? <Link href="/register/customer" className="text-blue-400 hover:underline">Sign up as patient</Link></p>
+                            <p>Already have an account? <Link href="/login" className="text-teal-400 hover:underline">Sign In</Link></p>
                         </div>
                     </CardFooter>
                 </form>

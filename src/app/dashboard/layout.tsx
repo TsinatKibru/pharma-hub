@@ -19,6 +19,10 @@ export default async function DashboardLayout({
         redirect("/admin");
     }
 
+    if (session.user.role === "PATIENT") {
+        redirect("/search");
+    }
+
     if (session.user.tenantStatus !== "ACTIVE") {
         redirect("/register/success");
     }

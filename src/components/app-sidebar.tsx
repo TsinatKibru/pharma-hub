@@ -8,7 +8,8 @@ import {
     LogOut,
     ChevronRight,
     User,
-    History as HistoryIcon
+    History as HistoryIcon,
+    CalendarDays
 } from "lucide-react";
 import {
     Sidebar,
@@ -38,6 +39,7 @@ export function AppSidebar({ user }: { user: any }) {
         : [
             { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
             { title: "Inventory", url: "/dashboard/inventory", icon: Package },
+            { title: "Bookings", url: "/dashboard/bookings", icon: CalendarDays },
             { title: "Stock History", url: "/dashboard/history", icon: HistoryIcon },
             { title: "Sales", url: "/dashboard/sales", icon: ShoppingCart },
             { title: "Settings", url: "/dashboard/settings", icon: Settings },

@@ -17,6 +17,7 @@ enum UserRole {
   ADMIN
   OWNER
   STAFF
+  PATIENT
 }
 
 enum MovementType {
@@ -25,6 +26,13 @@ enum MovementType {
   SALE
   ADJUSTMENT
   EXPIRY_REMOVAL
+}
+
+enum BookingStatus {
+  PENDING
+  READY
+  COMPLETED
+  CANCELLED
 }
 
 model Tenant {
@@ -45,6 +53,7 @@ model Tenant {
   users       User[]
   inventories Inventory[]
   sales       Sale[]
+  bookings    Booking[]
 
   @@index([slug])
 }
@@ -62,6 +71,7 @@ model User {
   tenantId String?
   tenant   Tenant? @relation(fields: [tenantId], references: [id])
   movements StockMovement[]
+  bookings  Booking[]
 }
 
 model Medicine {
@@ -97,6 +107,7 @@ model Inventory {
 
   saleItems SaleItem[]
   movements StockMovement[]
+  bookings  Booking[]
 
   @@unique([tenantId, medicineId])
   @@index([expiryDate])
@@ -137,4 +148,24 @@ model SaleItem {
   sale        Sale      @relation(fields: [saleId], references: [id])
   inventoryId String
   inventory   Inventory @relation(fields: [inventoryId], references: [id])
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  quantity    Int
+  status      BookingStatus @default(PENDING)
+  pickupCode  String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  inventoryId String
+  inventory   Inventory     @relation(fields: [inventoryId], references: [id])
+  tenantId    String
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+
+  @@index([pickupCode])
+  @@index([tenantId])
+  @@index([userId])
 }

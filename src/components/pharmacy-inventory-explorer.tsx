@@ -5,13 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Package, Pill, FilterX } from "lucide-react";
+import { BookPickupDialog } from "./book-pickup-dialog";
 
 interface PharmacyInventoryExplorerProps {
     inventories: any[];
     initialMedicineId?: string;
+    pharmacyName: string;
+    tenantId: string;
 }
 
-export function PharmacyInventoryExplorer({ inventories, initialMedicineId }: PharmacyInventoryExplorerProps) {
+export function PharmacyInventoryExplorer({
+    inventories,
+    initialMedicineId,
+    pharmacyName,
+    tenantId
+}: PharmacyInventoryExplorerProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -76,26 +84,42 @@ export function PharmacyInventoryExplorer({ inventories, initialMedicineId }: Ph
                                     : ""
                                     }`}
                             >
-                                <CardContent className="p-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-xl bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner">
-                                            <Package className={`h-6 w-6 transition-colors ${isHighlighted ? "text-teal-400" : "text-teal-700 group-hover:text-teal-500"}`} />
-                                        </div>
-                                        <div>
-                                            <h3 className={`font-bold transition-colors ${isHighlighted ? "text-teal-400" : "text-slate-200"}`}>{inv.medicine.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <p className="text-xs text-slate-500">{inv.medicine.category || "General Health"}</p>
-                                                {inv.medicine.genericName && (
-                                                    <span className="text-[10px] text-slate-700 font-bold uppercase tracking-widest leading-none">• {inv.medicine.genericName}</span>
-                                                )}
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-xl bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner">
+                                                <Package className={`h-6 w-6 transition-colors ${isHighlighted ? "text-teal-400" : "text-teal-700 group-hover:text-teal-500"}`} />
+                                            </div>
+                                            <div>
+                                                <h3 className={`font-bold transition-colors ${isHighlighted ? "text-teal-400" : "text-slate-200"}`}>{inv.medicine.name}</h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className="text-xs text-slate-500">{inv.medicine.category || "General Health"}</p>
+                                                    {inv.medicine.genericName && (
+                                                        <span className="text-[10px] text-slate-700 font-bold uppercase tracking-widest leading-none">• {inv.medicine.genericName}</span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="text-right space-y-1">
-                                        <div className="text-lg font-black text-teal-400 font-mono tracking-tighter">${Number(inv.price).toFixed(2)}</div>
-                                        <Badge variant="outline" className={`text-[9px] font-black uppercase tracking-widest ${inv.quantity > 5 ? 'text-teal-600 border-teal-900/30' : 'text-amber-600 border-amber-900/30'}`}>
-                                            {inv.quantity > 5 ? 'In Stock' : 'Limited Supply'}
-                                        </Badge>
+
+                                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between gap-4">
+                                            <div className="space-y-1 text-right">
+                                                <div className="text-2xl font-black text-teal-400 font-mono tracking-tighter">${Number(inv.price).toFixed(2)}</div>
+                                                <Badge variant="outline" className={`text-[9px] font-black uppercase tracking-widest ${inv.quantity > 5 ? 'text-teal-600 border-teal-900/30' : 'text-amber-600 border-amber-900/30'}`}>
+                                                    {inv.quantity > 5 ? 'In Stock' : 'Limited Supply'}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="w-full sm:w-32">
+                                                <BookPickupDialog
+                                                    inventoryId={inv.id}
+                                                    pharmacyName={pharmacyName}
+                                                    medicineName={inv.medicine.name}
+                                                    price={Number(inv.price)}
+                                                    availableQuantity={inv.quantity}
+                                                    tenantId={tenantId}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>

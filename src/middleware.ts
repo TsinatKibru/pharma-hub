@@ -16,6 +16,10 @@ export default withAuth(
             return NextResponse.redirect(new URL("/admin", req.url));
         }
 
+        if (isDashboardPage && token?.role === "PATIENT") {
+            return NextResponse.redirect(new URL("/search", req.url));
+        }
+
         return NextResponse.next();
     },
     {
